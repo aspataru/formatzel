@@ -1,3 +1,4 @@
+import batch.Batch;
 import org.junit.Test;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class TestBatch {
 
         List<List<String>> transformed = Batch.runBatch(fullPath);
 
-        assertThat(transformed).hasSize(662);
+        assertThat(transformed).hasSize(661);
     }
 
 }
