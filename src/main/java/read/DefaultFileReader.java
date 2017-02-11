@@ -14,7 +14,10 @@ import java.util.List;
 @Slf4j
 public class DefaultFileReader {
 
-    public List<String> readContentsAsString(String fullPathAsString) {
+    private DefaultFileReader() {
+    }
+
+    public static List<String> readContentsAsString(String fullPathAsString) {
         List<String> lines = new ArrayList<>();
         try {
             lines = Files.readAllLines(Paths.get(fullPathAsString));
