@@ -1,12 +1,12 @@
 package dto;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
 
 /**
  * Created by aspataru on 2/11/17.
  */
-@Value
+@Getter
 @Builder
 public class RawPoint {
 

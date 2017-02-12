@@ -1,4 +1,6 @@
 import batch.Batch;
+import dto.ParsedPoint;
+import dto.RawPoint;
 import org.junit.Test;
 
 import java.util.List;
@@ -10,14 +12,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class TestBatch {
 
+    private final String fullPath = getClass().getResource("inputFile").getPath();
+
     @Test
-    public void shouldTransformToExpectedValues() throws Exception {
-
-        String fullPath = getClass().getResource("inputFile").getPath();
-
-        List<List<String>> transformed = Batch.runBatch(fullPath);
-
+    public void shouldLoadAllRawPointsFromPath() throws Exception {
+        List<RawPoint> transformed = Batch.loadRawPointsFromPath(fullPath);
         assertThat(transformed).hasSize(661);
+    }
+
+    @Test
+    public void runFullBatch() {
+        List<ParsedPoint> finalPoints = Batch.runFullBatch(fullPath);
+        assertThat(finalPoints).hasSize(661);
     }
 
 }
