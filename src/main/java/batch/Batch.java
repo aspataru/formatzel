@@ -22,16 +22,14 @@ import java.util.stream.IntStream;
 @Slf4j
 public class Batch {
 
+    private static final BigDecimal THOUSAND = new BigDecimal("1000");
     private static Predicate<String> notNullOrEmpty = e -> e != null && !e.isEmpty();
-
     private static Function<String, List<String>> keepOnlyValues = input -> {
         String[] cleanDataRow = input.split(" ");
         return new ArrayList<>(Arrays.asList(cleanDataRow)).stream()
                 .filter(notNullOrEmpty)
                 .collect(Collectors.toList());
     };
-
-    private static final BigDecimal THOUSAND = new BigDecimal("1000");
 
     private Batch() {
     }
@@ -86,16 +84,76 @@ public class Batch {
                                 .build()
                 ).collect(Collectors.toList());
 
-        // compute average step in mV
-        List<BigDecimal> averageSteps = computeVoltageSteps(pointsReadyForProcessing);
-        List<BigDecimal> averageStepsExcludingAberrations = averageSteps.subList(1, averageSteps.size() - 1);
-        BigDecimal averageStep = computeAverage(averageStepsExcludingAberrations);
+        // for the rest of the processing, the first and last points will be ignored
+        List<ParsedPoint> stepsWithoutAberrations =
+                pointsReadyForProcessing.subList(1, pointsReadyForProcessing.size() - 1);
+
+        // compute delta voltage steps in mV
+        List<BigDecimal> deltaSteps = computeVoltageSteps(stepsWithoutAberrations);
+
+        // average step
+        BigDecimal averageStep = computeAverage(deltaSteps);
         log.info("Computed average voltage step as {}", averageStep);
 
+        // index of max voltage
+        int indexOfMaxVoltage = findIndexOfMaxVoltage(stepsWithoutAberrations);
+
+        // generate voltage steps to use in modified points
+        List<BigDecimal> generatedVoltageSteps = generateVoltageSteps(stepsWithoutAberrations.get(0).getVoltage(),
+                averageStep, indexOfMaxVoltage, stepsWithoutAberrations.size());
+
         // obtain new points using second value as seed and average delta as step
+        List<ParsedPoint> allModifiedPoints = IntStream.range(0, stepsWithoutAberrations.size())
+                .mapToObj(i ->
+                        ParsedPoint.builder()
+                                .voltage(generatedVoltageSteps.get(i))
+                                .current(stepsWithoutAberrations.get(i).getCurrent())
+                                .build()
+                ).collect(Collectors.toList());
 
+        // TODO
+        // format both
+        // keep same number going up + peak = going down
+        // reverse sign
 
-        return pointsReadyForProcessing;
+        return allModifiedPoints;
+    }
+
+    private static int findIndexOfMaxVoltage(List<ParsedPoint> points) {
+        int indexOfMaxVoltage = -1;
+        BigDecimal maxVoltage = BigDecimal.ZERO;
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i).getVoltage().compareTo(maxVoltage) > 0) {
+                maxVoltage = points.get(i).getVoltage();
+                indexOfMaxVoltage = i;
+            }
+        }
+        return indexOfMaxVoltage;
+    }
+
+    private static List<BigDecimal> generateVoltageSteps(BigDecimal seedValue, BigDecimal delta, int turnaroundIndex,
+                                                         int maxSize) {
+        // make sure the delta starts positive
+        BigDecimal safeDelta = delta.abs();
+
+        List<BigDecimal> generatedVoltageSteps = new ArrayList<>();
+        BigDecimal previous = seedValue;
+        generatedVoltageSteps.add(seedValue);
+
+        // steps to increase voltage
+        for (int i = 0; i < turnaroundIndex; i++) {
+            BigDecimal current = previous.add(safeDelta);
+            generatedVoltageSteps.add(current);
+            previous = current;
+        }
+        // steps to decrease voltage
+        for (int i = turnaroundIndex + 1; i < maxSize; i++) {
+            BigDecimal current = previous.subtract(safeDelta);
+            generatedVoltageSteps.add(current);
+            previous = current;
+        }
+
+        return generatedVoltageSteps;
     }
 
 

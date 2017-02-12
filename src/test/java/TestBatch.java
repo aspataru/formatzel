@@ -23,7 +23,7 @@ public class TestBatch {
     @Test
     public void runFullBatch() {
         List<ParsedPoint> finalPoints = Batch.runFullBatch(fullPath);
-        assertThat(finalPoints).hasSize(661);
+        assertThat(finalPoints).hasSize(659);
     }
 
 }
