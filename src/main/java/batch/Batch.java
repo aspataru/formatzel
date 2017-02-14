@@ -6,6 +6,9 @@ import dto.RawPoint;
 import lombok.extern.slf4j.Slf4j;
 import read.DefaultFileReader;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -49,6 +52,17 @@ public class Batch {
                 .collect(Collectors.toList());
     }
 
+    public static void writeRawPointsToFile(String path, List<ParsedPoint> points) {
+        try (FileWriter fw = new FileWriter(new File(path))) {
+            for (ParsedPoint point : points) {
+                fw.write(point.getVoltage() + "," + point.getCurrent() + "\n");
+            }
+            fw.flush();
+        } catch (IOException e) {
+            log.error("Failed to write to file {}", path, e);
+        }
+    }
+
     private static List<BigDecimal> computeVoltageSteps(List<ParsedPoint> parsedPoints) {
         return IntStream.range(0, parsedPoints.size() - 1)
                 .mapToObj(index -> delta(
@@ -70,7 +84,7 @@ public class Batch {
 
 
     // Run the whole thing!
-    public static List<ParsedPoint> runFullBatch(String path) {
+    public static void runFullBatch(String path) {
         // load points from input file and convert V to mV
         List<ParsedPoint> pointsReadyForProcessing = loadRawPointsFromPath(path).stream()
                 .map(rawPoint -> ParsedPoint.builder()
@@ -110,13 +124,17 @@ public class Batch {
                                 .current(stepsWithoutAberrations.get(i).getCurrent())
                                 .build()
                 ).collect(Collectors.toList());
+        List<ParsedPoint> symmetricalList = ensureSameNumberUpAndDown(allModifiedPoints);
 
-        // TODO
-        // format both
-        // keep same number going up + peak = going down
-        // reverse sign
+        List<ParsedPoint> readyToOutput = symmetricalList.stream()
+                .map(initial -> ParsedPoint.builder()
+                        .voltage(initial.getVoltage())
+                        .current(initial.getCurrent().negate()).build())
+                .collect(Collectors.toList());
 
-        return allModifiedPoints;
+        String outPath = path + ".out";
+        writeRawPointsToFile(outPath, readyToOutput);
+
     }
 
     private static int findIndexOfMaxVoltage(List<ParsedPoint> points) {
@@ -129,6 +147,31 @@ public class Batch {
             }
         }
         return indexOfMaxVoltage;
+    }
+
+    private static List<ParsedPoint> ensureSameNumberUpAndDown(List<ParsedPoint> points) {
+        int goingUp = 1;
+        int goingDown = 0;
+        BigDecimal previous = points.get(0).getVoltage();
+
+        for (int i = 1; i < points.size(); i++) {
+            ParsedPoint currentPoint = points.get(i);
+            if (currentPoint.getVoltage().compareTo(previous) > 0) {
+                goingUp++;
+            } else {
+                goingDown++;
+            }
+            previous = currentPoint.getVoltage();
+        }
+
+        log.info("Voltage steps going up {}, and down {}", goingUp, goingDown);
+
+        if (goingDown > goingUp) {
+            int diff = goingDown - goingUp;
+            log.info("Voltage steps going down are more than going up, delta {}, equalizing", diff);
+            return points.subList(0, points.size() - diff);
+        }
+        return points;
     }
 
     private static List<BigDecimal> generateVoltageSteps(BigDecimal seedValue, BigDecimal delta, int turnaroundIndex,
