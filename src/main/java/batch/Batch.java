@@ -55,7 +55,7 @@ public class Batch {
     public static void writeRawPointsToFile(String path, List<ParsedPoint> points) {
         try (FileWriter fw = new FileWriter(new File(path))) {
             for (ParsedPoint point : points) {
-                fw.write(point.getVoltage() + "," + point.getCurrent() + "\n");
+                fw.write(point + "\r\n");
             }
             fw.flush();
         } catch (IOException e) {
@@ -126,14 +126,15 @@ public class Batch {
                 ).collect(Collectors.toList());
         List<ParsedPoint> symmetricalList = ensureSameNumberUpAndDown(allModifiedPoints);
 
-        List<ParsedPoint> readyToOutput = symmetricalList.stream()
+        List<ParsedPoint> inversedSignList = symmetricalList.stream()
                 .map(initial -> ParsedPoint.builder()
                         .voltage(initial.getVoltage())
                         .current(initial.getCurrent().negate()).build())
                 .collect(Collectors.toList());
 
         String outPath = path + ".out";
-        writeRawPointsToFile(outPath, readyToOutput);
+
+        writeRawPointsToFile(outPath, inversedSignList);
 
     }
 
