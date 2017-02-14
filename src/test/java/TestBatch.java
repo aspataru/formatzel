@@ -21,7 +21,7 @@ public class TestBatch {
 
     @Test
     public void runFullBatch() {
-        Batch.runFullBatch(fullPath);
+        Batch.runFullBatch(fullPath, "out.txt");
     }
 
 }

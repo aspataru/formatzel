@@ -38,6 +38,7 @@ public class Batch {
     }
 
     public static List<RawPoint> loadRawPointsFromPath(String path) {
+        log.info("Opening file {}", path);
         return DefaultFileReader.readContentsAsString(path).stream()
                 .map(keepOnlyValues)
                 .filter(list -> {
@@ -53,6 +54,7 @@ public class Batch {
     }
 
     public static void writeRawPointsToFile(String path, List<ParsedPoint> points) {
+        log.info("Writing output to file {}", path);
         try (FileWriter fw = new FileWriter(new File(path))) {
             for (ParsedPoint point : points) {
                 fw.write(point + "\r\n");
@@ -84,9 +86,9 @@ public class Batch {
 
 
     // Run the whole thing!
-    public static void runFullBatch(String path) {
+    public static void runFullBatch(String pathIn, String pathOut) {
         // load points from input file and convert V to mV
-        List<ParsedPoint> pointsReadyForProcessing = loadRawPointsFromPath(path).stream()
+        List<ParsedPoint> pointsReadyForProcessing = loadRawPointsFromPath(pathIn).stream()
                 .map(rawPoint -> ParsedPoint.builder()
                         .voltage(new BigDecimal(rawPoint.getVoltage()))
                         .current(new BigDecimal(rawPoint.getCurrent()))
@@ -132,9 +134,7 @@ public class Batch {
                         .current(initial.getCurrent().negate()).build())
                 .collect(Collectors.toList());
 
-        String outPath = path + ".out";
-
-        writeRawPointsToFile(outPath, inversedSignList);
+        writeRawPointsToFile(pathOut, inversedSignList);
 
     }
 
