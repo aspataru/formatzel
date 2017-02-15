@@ -28,7 +28,8 @@ public class Batch {
     private static final BigDecimal THOUSAND = new BigDecimal("1000");
     private static Predicate<String> notNullOrEmpty = e -> e != null && !e.isEmpty();
     private static Function<String, List<String>> keepOnlyValues = input -> {
-        String[] cleanDataRow = input.split(" ");
+        String noNullCharacters = input.replaceAll("\\u0000", "");
+        String[] cleanDataRow = noNullCharacters.split("(\\t)|( )");
         return new ArrayList<>(Arrays.asList(cleanDataRow)).stream()
                 .filter(notNullOrEmpty)
                 .collect(Collectors.toList());
@@ -147,6 +148,7 @@ public class Batch {
                 indexOfMaxVoltage = i;
             }
         }
+        log.info("Max voltage is {}, at index {}", maxVoltage, indexOfMaxVoltage);
         return indexOfMaxVoltage;
     }
 
