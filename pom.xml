@@ -16,21 +16,21 @@
         <assertj-core.version>3.6.2</assertj-core.version>
         <lombok.version>1.16.12</lombok.version>
         <slf4j-log4j12.version>1.7.22</slf4j-log4j12.version>
-        <rxjava.version>1.2.6</rxjava.version>
-        <rxjava-string.version>1.1.1</rxjava-string.version>
+        <!--<rxjava.version>1.2.6</rxjava.version>-->
+        <!--<rxjava-string.version>1.1.1</rxjava-string.version>-->
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>io.reactivex</groupId>
-            <artifactId>rxjava</artifactId>
-            <version>${rxjava.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.reactivex</groupId>
-            <artifactId>rxjava-string</artifactId>
-            <version>${rxjava-string.version}</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>io.reactivex</groupId>-->
+        <!--<artifactId>rxjava</artifactId>-->
+        <!--<version>${rxjava.version}</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>io.reactivex</groupId>-->
+        <!--<artifactId>rxjava-string</artifactId>-->
+        <!--<version>${rxjava-string.version}</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>

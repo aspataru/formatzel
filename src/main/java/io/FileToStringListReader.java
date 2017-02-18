@@ -1,4 +1,4 @@
-package read;
+package io;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,12 +12,12 @@ import java.util.List;
  * Created by aspataru on 2/8/17.
  */
 @Slf4j
-public class DefaultFileReader {
+public class FileToStringListReader {
 
-    private DefaultFileReader() {
+    private FileToStringListReader() {
     }
 
-    public static List<String> readContentsAsString(String fullPathAsString) {
+    public static List<String> readRowsAsString(String fullPathAsString) {
         List<String> lines = new ArrayList<>();
         try {
             lines = Files.readAllLines(Paths.get(fullPathAsString));
