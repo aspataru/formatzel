@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.ParsedPointFileWriter.writeRawPointsToFile;
+import static io.ParsedPointFileWriter.writeRawPointsToFileWithSpaceAfterMax;
 
 /**
  * Created by aspataru on 2/11/17.
@@ -70,7 +70,7 @@ public class Batch implements Runnable {
                 .collect(Collectors.toList());
 
         log.info("Writing {} points to file {}", inversedSignList.size(), pathOut);
-        writeRawPointsToFile(pathOut, inversedSignList);
+        writeRawPointsToFileWithSpaceAfterMax(pathOut, inversedSignList);
 
     }
 
