@@ -31,13 +31,13 @@ public class VoltageBoundedGenerator implements Generator {
                 averageStep, maxVoltage);
 
         // 4. obtain new points using second value as seed and average delta as step
-        return IntStream.range(0, seedList.size())
+        return ensureSameNumberUpAndDown(IntStream.range(0, seedList.size())
                 .mapToObj(i ->
                         ParsedPoint.builder()
                                 .voltage(generatedVoltageSteps.get(i))
                                 .current(seedList.get(i).getCurrent())
                                 .build()
-                ).collect(Collectors.toList());
+                ).collect(Collectors.toList()));
     }
 
     private List<BigDecimal> generateVoltageSteps(BigDecimal seedValue,
@@ -77,6 +77,40 @@ public class VoltageBoundedGenerator implements Generator {
                 .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
         log.info("Max voltage is {}", maxVoltage);
         return maxVoltage;
+    }
+
+    private List<ParsedPoint> ensureSameNumberUpAndDown(List<ParsedPoint> points) {
+        int goingUp = 1;
+        int goingDown = 0;
+        BigDecimal previous = points.get(0).getVoltage();
+
+        for (int i = 1; i < points.size(); i++) {
+            ParsedPoint currentPoint = points.get(i);
+            if (currentPoint.getVoltage().compareTo(previous) > 0) {
+                goingUp++;
+            } else {
+                goingDown++;
+            }
+            previous = currentPoint.getVoltage();
+        }
+        // remove the peak from the number of points going up
+        // what we are interested in is to have number_up = number_down not including the peak between them
+        goingUp--;
+
+        log.info("Voltage steps going up {}, and down {}", goingUp, goingDown);
+
+        if (goingDown > goingUp) {
+            int diff = goingDown - goingUp;
+            log.info("Voltage steps going down are more than going up, delta {}, equalizing", diff);
+            return points.subList(0, points.size() - diff);
+        } else if (goingUp > goingDown) {
+            int diff = goingUp - goingDown;
+            log.info("Voltage steps going up are more than going down, delta {}, equalizing", diff);
+            return points.subList(diff, points.size());
+        }
+
+        log.info("Voltage steps going up and down are equal ({}), no need to equalize", goingUp);
+        return points;
     }
 
 
