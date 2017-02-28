@@ -76,7 +76,6 @@ public class IndexBoundedGenerator implements Generator {
                 indexOfMaxVoltage = i;
             }
         }
-        log.info("Max voltage is {}, at index {}", maxVoltage, indexOfMaxVoltage);
         return indexOfMaxVoltage;
     }
 

@@ -48,6 +48,7 @@ public class ParsedPointFileWriter {
 
             }
             fw.flush();
+            log.info("Max voltage in output file is {}", max.setScale(2, BigDecimal.ROUND_HALF_UP));
         } catch (IOException e) {
             log.error("Failed to write to file {}", path, e);
         }

@@ -72,11 +72,9 @@ public class VoltageBoundedGenerator implements Generator {
     }
 
     private BigDecimal findMaxVoltage(List<ParsedPoint> points) {
-        BigDecimal maxVoltage = points.stream()
+        return points.stream()
                 .map(ParsedPoint::getVoltage)
                 .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
-        log.info("Max voltage is {}", maxVoltage);
-        return maxVoltage;
     }
 
     private List<ParsedPoint> ensureSameNumberUpAndDown(List<ParsedPoint> points) {
