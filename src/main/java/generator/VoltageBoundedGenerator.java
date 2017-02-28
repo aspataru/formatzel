@@ -91,12 +91,8 @@ public class VoltageBoundedGenerator implements Generator {
             }
             previous = currentPoint.getVoltage();
         }
-        // remove the peak from the number of points going up
-        // what we are interested in is to have number_up = number_down not including the peak between them
-        goingUp--;
 
         log.info("Voltage steps going up {}, and down {}", goingUp, goingDown);
-
         if (goingDown > goingUp) {
             int diff = goingDown - goingUp;
             log.info("Voltage steps going down are more than going up, delta {}, equalizing", diff);
